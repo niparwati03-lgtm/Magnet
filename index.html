@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Lab Maya Magnet - Kelas 5 SD (Fase C)</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    /* Aspect Ratio 16:9 & Strict No-Scroll */
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background-color: #0f172a;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    /* Container Fixed 16:9 Aspect Ratio Maintainer */
+    #app-container {
+      width: 100vw;
+      height: 100vh;
+      max-width: 177.78vh; /* 16:9 ratio */
+      max-height: 56.25vw; /* 16:9 ratio */
+      margin: auto;
+      position: absolute;
+      top: 0; left: 0; bottom: 0; right: 0;
+      background: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    /* Tab Switcher Styling */
+    .tab-btn {
+      transition: all 0.2s ease;
+    }
+    .tab-btn.active {
+      background-color: #2563eb;
+      color: #ffffff;
+      box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.4);
+      transform: translateY(-2px);
+    }
+
+    /* Custom Scrollbar for internal sub-containers if text is long */
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 4px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+
+    /* Canvas styling */
+    canvas {
+      touch-action: none;
+    }
+
+    /* Magnet Pulse Animation */
+    @keyframes magneticGlow {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 0.8; }
+    }
+    .magnetic-field-glow {
+      animation: magneticGlow 2s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="flex items-center justify-center min-h-screen bg-slate-900 text-slate-800">
+
+  <!-- APP CONTAINER (STRICT 16:9 RATIO) -->
+  <div id="app-container" class="relative">
+
+    <!-- SPLASH SCREEN -->
+    <div id="splash-screen" class="absolute inset-0 z-50 bg-gradient-to-br from-indigo-900 via-blue-800 to-sky-900 text-white flex flex-col items-center justify-between p-6 sm:p-8">
+      <!-- Title Header -->
+      <div class="text-center mt-2">
+        <div class="inline-flex items-center justify-center p-3 bg-white/10 backdrop-blur-md rounded-2xl mb-2 border border-white/20">
+          <i class="fa-solid fa-magnet text-4xl sm:text-5xl text-red-400 animate-bounce"></i>
+        </div>
+        <h1 class="text-2xl sm:text-4xl font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-white to-sky-300">
+          LAB MAYA MAGNETIK INTERAKTIF
+        </h1>
+        <p class="text-xs sm:text-sm text-sky-200 mt-1 font-medium">
+          Ilmu Pengetahuan Alam dan Sosial (IPAS) • Kelas 5 SD (Fase C)
+        </p>
+      </div>
+
+      <!-- Center Animation Graphic -->
+      <div class="relative w-48 h-28 sm:w-64 sm:h-36 flex items-center justify-center my-auto">
+        <div class="absolute inset-0 bg-blue-500/20 rounded-full blur-xl animate-pulse"></div>
+        <div class="flex items-center space-x-2 z-10 scale-90 sm:scale-100">
+          <!-- Magnet U-S Left -->
+          <div class="flex rounded-lg overflow-hidden border-2 border-white/40 shadow-2xl">
+            <div class="w-12 h-10 bg-red-600 flex items-center justify-center text-white font-bold text-sm">U</div>
+            <div class="w-12 h-10 bg-blue-600 flex items-center justify-center text-white font-bold text-sm">S</div>
+          </div>
+          <!-- Magnetic waves -->
+          <div class="flex space-x-1 text-yellow-400 text-xs animate-pulse">
+            <i class="fa-solid fa-bolt"></i>
+            <i class="fa-solid fa-bolt"></i>
+            <i class="fa-solid fa-bolt"></i>
+          </div>
+          <!-- Magnet U-S Right -->
+          <div class="flex rounded-lg overflow-hidden border-2 border-white/40 shadow-2xl">
+            <div class="w-12 h-10 bg-red-600 flex items-center justify-center text-white font-bold text-sm">U</div>
+            <div class="w-12 h-10 bg-blue-600 flex items-center justify-center text-white font-bold text-sm">S</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading / Start Button Section -->
+      <div class="w-full max-w-xs text-center mb-2">
+        <div id="loading-bar-container" class="w-full">
+          <div class="flex justify-between text-xs text-sky-200 mb-1 font-semibold">
+            <span>Memuat Laboratorium...</span>
+            <span id="loading-percent">0%</span>
+          </div>
+          <div class="w-full h-3 bg-blue-950/80 rounded-full overflow-hidden p-0.5 border border-sky-400/30">
+            <div id="loading-progress" class="h-full bg-gradient-to-r from-amber-400 to-yellow-300 rounded-full w-0 transition-all duration-300"></div>
+          </div>
+        </div>
+
+        <button id="btn-start" onclick="startApp()" class="hidden w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-base sm:text-lg rounded-xl shadow-lg hover:shadow-emerald-500/50 transform hover:-translate-y-0.5 transition-all active:scale-95 border border-emerald-300/40">
+          <i class="fa-solid fa-play mr-2"></i> MULAI LAB MAYA
+        </button>
+      </div>
+
+      <!-- Footer Info -->
+      <div class="text-[10px] text-sky-300/70">
+        Disesuaikan Kurikulum Merdeka • Kelas V SD Fase C
+      </div>
+    </div>
+
+    <!-- HEADER / NAVIGATION BAR (Top 12% Height) -->
+    <header class="h-[12%] bg-slate-800 border-b border-slate-700 px-3 sm:px-4 flex items-center justify-between text-white shrink-0">
+      <!-- Title Brand -->
+      <div class="flex items-center space-x-2">
+        <div class="w-8 h-8 sm:w-9 sm:h-9 bg-red-600 rounded-lg flex items-center justify-center text-white font-black text-lg shadow-md">
+          <i class="fa-solid fa-magnet"></i>
+        </div>
+        <div>
+          <h2 class="text-xs sm:text-sm font-bold leading-none text-slate-100">Lab Maya Magnet</h2>
+          <span class="text-[9px] sm:text-[10px] text-sky-400 font-medium">IPAS Kelas 5 SD</span>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="flex items-center space-x-1 sm:space-x-2 bg-slate-900/80 p-1 rounded-xl border border-slate-700">
+        <button onclick="switchTab('teori')" id="nav-teori" class="tab-btn active px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-semibold flex items-center space-x-1 text-slate-300">
+          <i class="fa-solid fa-book-open"></i> <span class="hidden sm:inline">1. Teori</span>
+        </button>
+        <button onclick="switchTab('prosedur')" id="nav-prosedur" class="tab-btn px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-semibold flex items-center space-x-1 text-slate-300">
+          <i class="fa-solid fa-list-check"></i> <span class="hidden sm:inline">2. Prosedur</span>
+        </button>
+        <button onclick="switchTab('simulasi')" id="nav-simulasi" class="tab-btn px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-semibold flex items-center space-x-1 text-slate-300">
+          <i class="fa-solid fa-flask"></i> <span class="hidden sm:inline">3. Simulasi</span>
+        </button>
+        <button onclick="switchTab('lkpd')" id="nav-lkpd" class="tab-btn px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-semibold flex items-center space-x-1 text-slate-300">
+          <i class="fa-solid fa-pen-to-square"></i> <span class="hidden sm:inline">4. LKPD</span>
+        </button>
+        <button onclick="switchTab('pengembang')" id="nav-pengembang" class="tab-btn px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-semibold flex items-center space-x-1 text-slate-300">
+          <i class="fa-solid fa-user-gear"></i> <span class="hidden sm:inline">5. Pengembang</span>
+        </button>
+      </nav>
+
+      <!-- Audio & Mute Toggle -->
+      <button onclick="toggleAudio()" id="btn-audio" class="w-8 h-8 sm:w-9 sm:h-9 bg-slate-700 hover:bg-slate-600 rounded-lg flex items-center justify-center text-xs sm:text-sm text-yellow-400 transition border border-slate-600">
+        <i class="fa-solid fa-volume-high" id="audio-icon"></i>
+      </button>
+    </header>
+
+    <!-- MAIN CONTENT AREA (Remaining 88% Height) -->
+    <main class="h-[88%] relative overflow-hidden bg-slate-100">
+
+      <!-- TAB 1: TEORI -->
+      <section id="tab-teori" class="w-full h-full p-3 sm:p-4 overflow-y-auto custom-scroll flex flex-col justify-between">
+        <div class="max-w-4xl mx-auto w-full space-y-3">
+          <div class="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-slate-200">
+            <h3 class="text-sm sm:text-base font-bold text-blue-800 flex items-center mb-1">
+              <i class="fa-solid fa-circle-info mr-2 text-blue-600"></i> Apa Itu Magnet?
+            </h3>
+            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              <strong>Magnet</strong> adalah benda yang memiliki kemampuan menarik benda-benda tertentu yang terbuat dari bahan logam di sekitarnya. Magnet memiliki dua kutub: <strong>Kutub Utara (U)</strong> dan <strong>Kutub Selatan (S)</strong>.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <!-- Sifat 1 -->
+            <div class="bg-gradient-to-br from-red-50 to-orange-50 p-3 rounded-xl border border-red-200">
+              <h4 class="text-xs sm:text-sm font-bold text-red-800 flex items-center mb-1">
+                <i class="fa-solid fa-magnet mr-1.5 text-red-600"></i> Sifat Interaksi Kutub
+              </h4>
+              <ul class="text-[11px] sm:text-xs text-slate-700 space-y-1 list-disc list-inside">
+                <li>Kutub <strong>Sejenis (U-U / S-S)</strong> akan <strong>TOLAK-MENOLAK</strong>.</li>
+                <li>Kutub <strong>Berbeda (U-S / S-U)</strong> akan <strong>TARIK-MENARIK</strong>.</li>
+              </ul>
+            </div>
+
+            <!-- Sifat 2 -->
+            <div class="bg-gradient-to-br from-emerald-50 to-teal-50 p-3 rounded-xl border border-emerald-200">
+              <h4 class="text-xs sm:text-sm font-bold text-emerald-800 flex items-center mb-1">
+                <i class="fa-solid fa-cubes mr-1.5 text-emerald-600"></i> Jenis Bahan Benda
+              </h4>
+              <ul class="text-[11px] sm:text-xs text-slate-700 space-y-1 list-disc list-inside">
+                <li><strong>Magnetis (Ferromagnetik):</strong> Ditarik kuat oleh magnet (Paku besi, klip kertas, sendok besi).</li>
+                <li><strong>Non-Magnetis:</strong> Tidak ditarik magnet (Kayu, plastik, karet, daun, kertas).</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="bg-slate-800 text-white p-3 rounded-xl shadow-sm border border-slate-700 flex items-center justify-between">
+            <div class="space-y-0.5">
+              <h4 class="text-xs sm:text-sm font-bold text-yellow-400">Garis Gaya Magnet & Medan Magnet</h4>
+              <p class="text-[11px] sm:text-xs text-slate-300">
+                Garis gaya magnet selalu keluar dari <strong>Kutub Utara (U)</strong> dan masuk menuju <strong>Kutub Selatan (S)</strong>.
+              </p>
+            </div>
+            <i class="fa-solid fa-compass text-3xl text-sky-400 ml-2"></i>
+          </div>
+        </div>
+
+        <div class="text-center mt-2">
+          <button onclick="switchTab('simulasi')" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg shadow-md transition">
+            Mulai Percobaan di Simulasi <i class="fa-solid fa-arrow-right ml-1"></i>
+          </button>
+        </div>
+      </section>
+
+      <!-- TAB 2: PROSEDUR -->
+      <section id="tab-prosedur" class="hidden w-full h-full p-3 sm:p-4 overflow-y-auto custom-scroll">
+        <div class="max-w-4xl mx-auto w-full space-y-3">
+          <h3 class="text-sm sm:text-base font-bold text-slate-800 flex items-center">
+            <i class="fa-solid fa-list-ol mr-2 text-indigo-600"></i> Panduan Langkah-Langkah Percobaan
+          </h3>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <!-- Mode 1 -->
+            <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+              <div class="text-xs font-bold bg-indigo-100 text-indigo-800 px-2 py-1 rounded w-max mb-2">
+                Percobaan 1
+              </div>
+              <h4 class="text-xs sm:text-sm font-bold text-slate-800 mb-1">Interaksi Kutub Magnet</h4>
+              <ol class="text-[11px] text-slate-600 space-y-1.5 list-decimal list-inside leading-snug">
+                <li>Pilih mode <strong>"Kutub Magnet"</strong> di menu Simulasi.</li>
+                <li>Geser magnet bergerak menggunakan mouse atau sentuhan jari.</li>
+                <li>Dekatkan antar kutub yang sama (U-U) atau berbeda (U-S).</li>
+                <li>Amati efek daya dorong (tolak) dan daya tarik!</li>
+              </ol>
+            </div>
+
+            <!-- Mode 2 -->
+            <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+              <div class="text-xs font-bold bg-amber-100 text-amber-800 px-2 py-1 rounded w-max mb-2">
+                Percobaan 2
+              </div>
+              <h4 class="text-xs sm:text-sm font-bold text-slate-800 mb-1">Uji Benda Magnetis</h4>
+              <ol class="text-[11px] text-slate-600 space-y-1.5 list-decimal list-inside leading-snug">
+                <li>Pilih mode <strong>"Sifat Benda"</strong> di menu Simulasi.</li>
+                <li>Seret berbagai benda (Paku, Pensil, Klip, Karet) mendekati magnet.</li>
+                <li>Amati apakah benda tersebut menempel (Magnetis) atau diam (Non-Magnetis).</li>
+              </ol>
+            </div>
+
+            <!-- Mode 3 -->
+            <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+              <div class="text-xs font-bold bg-emerald-100 text-emerald-800 px-2 py-1 rounded w-max mb-2">
+                Percobaan 3
+              </div>
+              <h4 class="text-xs sm:text-sm font-bold text-slate-800 mb-1">Serbuk Besi & Medan Magnet</h4>
+              <ol class="text-[11px] text-slate-600 space-y-1.5 list-decimal list-inside leading-snug">
+                <li>Pilih mode <strong>"Garis Gaya"</strong>.</li>
+                <li>Klik tombol <strong>"Tabur Serbuk Besi"</strong>.</li>
+                <li>Perhatikan pola lengkungan garis gaya dari kutub U menuju S.</li>
+              </ol>
+            </div>
+          </div>
+
+          <div class="bg-yellow-50 border border-yellow-300 rounded-xl p-3 flex items-center space-x-3">
+            <i class="fa-solid fa-lightbulb text-yellow-600 text-2xl"></i>
+            <p class="text-[11px] sm:text-xs text-yellow-900 font-medium">
+              <strong>Tips Guru:</strong> Mintalah siswa mencatat hasil pengamatan di simulasi sebelum mengerjakan menu <strong>LKPD</strong> untuk menguji pemahaman mereka!
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: SIMULASI (Interactive Canvas) -->
+      <section id="tab-simulasi" class="hidden w-full h-full flex flex-col bg-slate-900 relative">
+        <!-- Sub-Menu Control Bar Top -->
+        <div class="h-[12%] bg-slate-800/90 px-3 flex items-center justify-between border-b border-slate-700">
+          <!-- Sub Mode Switcher -->
+          <div class="flex space-x-1 sm:space-x-2">
+            <button onclick="setSimMode('kutub')" id="subnav-kutub" class="px-2.5 py-1 rounded-lg text-[10px] sm:text-xs font-bold transition bg-blue-600 text-white">
+              <i class="fa-solid fa-arrows-left-right mr-1"></i> Kutub Magnet
+            </button>
+            <button onclick="setSimMode('benda')" id="subnav-benda" class="px-2.5 py-1 rounded-lg text-[10px] sm:text-xs font-bold transition bg-slate-700 text-slate-300 hover:bg-slate-600">
+              <i class="fa-solid fa-magnet mr-1"></i> Sifat Benda
+            </button>
+            <button onclick="setSimMode('garis')" id="subnav-garis" class="px-2.5 py-1 rounded-lg text-[10px] sm:text-xs font-bold transition bg-slate-700 text-slate-300 hover:bg-slate-600">
+              <i class="fa-solid fa-spray-can mr-1"></i> Garis Gaya
+            </button>
+          </div>
+
+          <!-- Interactive Action Controls -->
+          <div class="flex items-center space-x-2">
+            <button onclick="flipMagnet()" id="btn-flip" class="px-2.5 py-1 bg-amber-600 hover:bg-amber-500 text-white text-[10px] sm:text-xs font-bold rounded-lg transition flex items-center">
+              <i class="fa-solid fa-rotate mr-1"></i> Putar Kutub
+            </button>
+            <button onclick="resetSimulation()" class="px-2.5 py-1 bg-red-600 hover:bg-red-500 text-white text-[10px] sm:text-xs font-bold rounded-lg transition flex items-center">
+              <i class="fa-solid fa-arrow-rotate-left mr-1"></i> Reset
+            </button>
+          </div>
+        </div>
+
+        <!-- Simulation Interactive Canvas Area -->
+        <div class="h-[88%] relative overflow-hidden bg-slate-950 flex items-center justify-center">
+          <canvas id="simCanvas" class="w-full h-full border-none"></canvas>
+
+          <!-- Floating Info Overlay Banner -->
+          <div id="sim-status-banner" class="absolute top-2 left-1/2 transform -translate-x-1/2 bg-slate-900/80 backdrop-blur border border-slate-700 text-sky-300 px-3 py-1 rounded-full text-[11px] sm:text-xs font-medium pointer-events-none shadow-md">
+            Geser magnet / benda menggunakan jari atau mouse!
+          </div>
+
+          <!-- Garis Gaya Special Controls (Visible in 'garis' mode only) -->
+          <div id="garis-controls" class="hidden absolute bottom-3 left-1/2 transform -translate-x-1/2 flex space-x-2 bg-slate-900/90 p-2 rounded-xl border border-slate-700 shadow-xl">
+            <button onclick="sprinkleIron()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition flex items-center">
+              <i class="fa-solid fa-cookie-bite mr-1"></i> Tabur Serbuk Besi
+            </button>
+            <button onclick="clearIron()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold rounded-lg transition">
+              Bersihkan
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: LKPD INTERAKTIF -->
+      <section id="tab-lkpd" class="hidden w-full h-full p-3 sm:p-4 overflow-y-auto custom-scroll">
+        <div class="max-w-3xl mx-auto w-full space-y-3">
+          <!-- Quiz Header -->
+          <div class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white p-3 rounded-xl flex items-center justify-between shadow-md">
+            <div>
+              <h3 class="text-sm sm:text-base font-bold">Lembar Kerja Peserta Didik (LKPD)</h3>
+              <p class="text-[10px] sm:text-xs text-blue-200">Uji Pemahaman Mendasar Tentang Magnet</p>
+            </div>
+            <div id="score-badge" class="bg-yellow-400 text-slate-900 px-3 py-1 rounded-lg font-extrabold text-sm sm:text-base shadow">
+              Skor: 0 / 100
+            </div>
+          </div>
+
+          <!-- Question 1 -->
+          <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+            <p class="text-xs sm:text-sm font-bold text-slate-800 mb-2">
+              1. Jika dua buah kutub magnet yang <strong>Sejenis (Utara dan Utara)</strong> didekatkan, apa yang akan terjadi?
+            </p>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <label class="flex items-center p-2 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                <input type="radio" name="q1" value="A" class="mr-2"> A. Tarik-menarik
+              </label>
+              <label class="flex items-center p-2 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                <input type="radio" name="q1" value="B" class="mr-2"> B. Tolak-menolak
+              </label>
+            </div>
+          </div>
+
+          <!-- Question 2 -->
+          <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+            <p class="text-xs sm:text-sm font-bold text-slate-800 mb-2">
+              2. Kelompok benda berikut yang semuanya dapat <strong>ditarik oleh magnet (Magnetis)</strong> adalah...
+            </p>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <label class="flex items-center p-2 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                <input type="radio" name="q2" value="A" class="mr-2"> A. Paku besi & Klip kertas
+              </label>
+              <label class="flex items-center p-2 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                <input type="radio" name="q2" value="B" class="mr-2"> B. Pensil kayu & Penghapus
+              </label>
+            </div>
+          </div>
+
+          <!-- Question 3 -->
+          <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+            <p class="text-xs sm:text-sm font-bold text-slate-800 mb-2">
+              3. Garis gaya magnet pada luar magnet selalu bergerak dari kutub...
+            </p>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <label class="flex items-center p-2 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                <input type="radio" name="q3" value="A" class="mr-2"> A. Utara ke Selatan
+              </label>
+              <label class="flex items-center p-2 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                <input type="radio" name="q3" value="B" class="mr-2"> B. Selatan ke Utara
+              </label>
+            </div>
+          </div>
+
+          <!-- Quiz Action Buttons -->
+          <div class="flex space-x-2 pt-1 pb-4">
+            <button onclick="checkQuiz()" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm rounded-xl shadow transition flex items-center justify-center">
+              <i class="fa-solid fa-check-circle mr-1.5"></i> Periksa Jawaban
+            </button>
+            <button onclick="resetQuiz()" class="px-4 py-2.5 bg-slate-600 hover:bg-slate-500 text-white font-bold text-xs sm:text-sm rounded-xl transition">
+              Ulangi
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 5: PENGEMBANG -->
+      <section id="tab-pengembang" class="hidden w-full h-full p-3 sm:p-4 overflow-y-auto custom-scroll">
+        <div class="max-w-3xl mx-auto w-full space-y-3">
+          <!-- Dev Profile -->
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-4">
+            <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-md shrink-0">
+              <i class="fa-solid fa-user-graduate"></i>
+            </div>
+            <div class="text-center sm:text-left space-y-1">
+              <h3 class="text-sm sm:text-base font-bold text-slate-800">Pengembang Lab Maya Interaktif</h3>
+              <p class="text-xs text-blue-600 font-semibold">Guru Sekolah Dasar (Fase C Specialist)</p>
+              <p class="text-[11px] text-slate-500">
+                Media Pembelajaran Virtual Interaktif IPAS Materi Magnetisme Berbasis Web Offline.
+              </p>
+            </div>
+          </div>
+
+          <!-- TP & CP Kurikulum Merdeka -->
+          <div class="bg-slate-800 text-white p-3.5 rounded-xl space-y-2">
+            <h4 class="text-xs sm:text-sm font-bold text-yellow-400 flex items-center">
+              <i class="fa-solid fa-bullseye mr-2"></i> Capaian & Tujuan Pembelajaran (CP / TP)
+            </h4>
+            <div class="text-[11px] sm:text-xs text-slate-300 space-y-1 leading-relaxed">
+              <p><strong>Capaian Pembelajaran (Fase C):</strong> Peserta didik memanfaatkan gejala kemagnetan dalam kehidupan sehari-hari, mendemonstrasikan bagaimana magnet bekerja, dan mengidentifikasi sifat-sifat magnet.</p>
+              <p><strong>Tujuan Pembelajaran:</strong></p>
+              <ul class="list-disc list-inside space-y-0.5 text-slate-300 pl-1">
+                <li>Menganalisis interaksi antar kutub magnet (tarik-menarik / tolak-menolak).</li>
+                <li>Mengklasifikasikan benda magnetis dan non-magnetis secara cermat.</li>
+                <li>Visualisasi bentuk garis gaya dan medan magnetik.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="text-center text-[10px] text-slate-400 py-2">
+            Versi 1.0 • Full Offline Standalone Web App
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    /* ==========================================================================
+       1. WEB AUDIO API SYNTHESIZER (No External Sound Files)
+       ========================================================================== */
+    let audioCtx = null;
+    let audioEnabled = true;
+
+    function initAudio() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function toggleAudio() {
+      audioEnabled = !audioEnabled;
+      const icon = document.getElementById('audio-icon');
+      if (audioEnabled) {
+        icon.className = "fa-solid fa-volume-high";
+        playSound('click');
+      } else {
+        icon.className = "fa-solid fa-volume-xmark text-red-400";
+      }
+    }
+
+    function playSound(type) {
+      if (!audioEnabled) return;
+      initAudio();
+
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        const now = audioCtx.currentTime;
+
+        if (type === 'click') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(600, now);
+          osc.frequency.exponentialRampToValueAtTime(200, now + 0.05);
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.linearRampToValueAtTime(0.01, now + 0.05);
+          osc.start(now);
+          osc.stop(now + 0.05);
+        } else if (type === 'snap') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(150, now);
+          osc.frequency.exponentialRampToValueAtTime(400, now + 0.08);
+          gain.gain.setValueAtTime(0.5, now);
+          gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
+          osc.start(now);
+          osc.stop(now + 0.08);
+        } else if (type === 'repel') {
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(180, now);
+          osc.frequency.linearRampToValueAtTime(100, now + 0.15);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
+          osc.start(now);
+          osc.stop(now + 0.15);
+        } else if (type === 'success') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(400, now);
+          osc.frequency.setValueAtTime(600, now + 0.1);
+          osc.frequency.setValueAtTime(800, now + 0.2);
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.linearRampToValueAtTime(0.01, now + 0.35);
+          osc.start(now);
+          osc.stop(now + 0.35);
+        } else if (type === 'wrong') {
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(250, now);
+          osc.frequency.setValueAtTime(150, now + 0.1);
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
+          osc.start(now);
+          osc.stop(now + 0.25);
+        }
+      } catch (e) {
+        console.log("Audio play error", e);
+      }
+    }
+
+    /* ==========================================================================
+       2. SPLASH SCREEN & APP INITIALIZATION
+       ========================================================================== */
+    window.addEventListener('load', () => {
+      let progress = 0;
+      const progressEl = document.getElementById('loading-progress');
+      const percentEl = document.getElementById('loading-percent');
+      const loadingBarContainer = document.getElementById('loading-bar-container');
+      const btnStart = document.getElementById('btn-start');
+
+      const interval = setInterval(() => {
+        progress += 15;
+        if (progress > 100) progress = 100;
+        progressEl.style.width = progress + '%';
+        percentEl.innerText = progress + '%';
+
+        if (progress >= 100) {
+          clearInterval(interval);
+          setTimeout(() => {
+            loadingBarContainer.classList.add('hidden');
+            btnStart.classList.remove('hidden');
+          }, 300);
+        }
+      }, 100);
+    });
+
+    function startApp() {
+      initAudio();
+      playSound('success');
+      const splash = document.getElementById('splash-screen');
+      splash.style.transition = 'opacity 0.5s ease';
+      splash.style.opacity = '0';
+      setTimeout(() => {
+        splash.classList.add('hidden');
+        initCanvas();
+      }, 500);
+    }
+
+    /* ==========================================================================
+       3. NAVIGATION LOGIC
+       ========================================================================== */
+    function switchTab(tabId) {
+      playSound('click');
+      const tabs = ['teori', 'prosedur', 'simulasi', 'lkpd', 'pengembang'];
+      tabs.forEach(t => {
+        document.getElementById(`tab-${t}`).classList.add('hidden');
+        document.getElementById(`nav-${t}`).classList.remove('active');
+      });
+
+      document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+      document.getElementById(`nav-${tabId}`).classList.add('active');
+
+      if (tabId === 'simulasi') {
+        setTimeout(resizeCanvas, 50);
+      }
+    }
+
+    /* ==========================================================================
+       4. SIMULATION CANVAS ENGINE (Interactive 2D Magnet Physics)
+       ========================================================================== */
+    let canvas, ctx;
+    let simMode = 'kutub'; // 'kutub', 'benda', 'garis'
+    let isDragging = false;
+    let dragTarget = null;
+    let dragOffsetX = 0, dragOffsetY = 0;
+
+    // Objects Data
+    let magnetFixed = { x: 0, y: 0, w: 140, h: 45, northLeft: true };
+    let magnetDraggable = { x: 0, y: 0, w: 140, h: 45, northLeft: true };
+
+    let testItems = [];
+    let ironFilings = [];
+
+    function initCanvas() {
+      canvas = document.getElementById('simCanvas');
+      ctx = canvas.getContext('2d');
+
+      window.addEventListener('resize', resizeCanvas);
+      setupInputListeners();
+      resizeCanvas();
+      resetSimulation();
+      requestAnimationFrame(animLoop);
+    }
+
+    function resizeCanvas() {
+      if (!canvas) return;
+      const rect = canvas.parentElement.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+      repositionObjects();
+    }
+
+    function repositionObjects() {
+      if (!canvas) return;
+      const cw = canvas.width;
+      const ch = canvas.height;
+
+      // Magnet 1 Center Left
+      magnetFixed.x = cw * 0.25 - magnetFixed.w / 2;
+      magnetFixed.y = ch * 0.5 - magnetFixed.h / 2;
+
+      // Magnet 2 Center Right
+      if (!isDragging) {
+        magnetDraggable.x = cw * 0.7 - magnetDraggable.w / 2;
+        magnetDraggable.y = ch * 0.5 - magnetDraggable.h / 2;
+      }
+
+      // Initialize Test Items for 'benda' mode
+      if (testItems.length === 0) {
+        resetTestItems();
+      }
+    }
+
+    function resetTestItems() {
+      const cw = canvas.width || 600;
+      const ch = canvas.height || 350;
+      
+      testItems = [
+        { id: 'paku', name: 'Paku Besi', magnetic: true, x: cw * 0.65, y: ch * 0.25, w: 60, h: 16, icon: 'fa-italic', color: '#94a3b8' },
+        { id: 'klip', name: 'Klip Kertas', magnetic: true, x: cw * 0.8, y: ch * 0.25, w: 45, h: 16, icon: 'fa-paperclip', color: '#cbd5e1' },
+        { id: 'pensil', name: 'Pensil Kayu', magnetic: false, x: cw * 0.65, y: ch * 0.75, w: 70, h: 16, icon: 'fa-pencil', color: '#f59e0b' },
+        { id: 'karet', name: 'Penghapus', magnetic: false, x: cw * 0.8, y: ch * 0.75, w: 50, h: 25, icon: 'fa-eraser', color: '#f43f5e' }
+      ];
+    }
+
+    function setSimMode(mode) {
+      playSound('click');
+      simMode = mode;
+
+      const modes = ['kutub', 'benda', 'garis'];
+      modes.forEach(m => {
+        const btn = document.getElementById(`subnav-${m}`);
+        if (m === mode) {
+          btn.className = "px-2.5 py-1 rounded-lg text-[10px] sm:text-xs font-bold transition bg-blue-600 text-white";
+        } else {
+          btn.className = "px-2.5 py-1 rounded-lg text-[10px] sm:text-xs font-bold transition bg-slate-700 text-slate-300 hover:bg-slate-600";
+        }
+      });
+
+      // Controls visibility
+      const garisControls = document.getElementById('garis-controls');
+      const btnFlip = document.getElementById('btn-flip');
+
+      if (mode === 'garis') {
+        garisControls.classList.remove('hidden');
+        btnFlip.classList.add('hidden');
+      } else {
+        garisControls.classList.add('hidden');
+        btnFlip.classList.remove('hidden');
+      }
+
+      const statusBanner = document.getElementById('sim-status-banner');
+      if (mode === 'kutub') {
+        statusBanner.innerText = "Dekatkan dua magnet untuk melihat gaya tarik/tolak!";
+      } else if (mode === 'benda') {
+        statusBanner.innerText = "Geser benda-benda ke dekat magnet untuk menguji sifat magnetisnya!";
+      } else {
+        statusBanner.innerText = "Klik 'Tabur Serbuk Besi' untuk melihat garis gaya magnet!";
+      }
+
+      resetSimulation();
+    }
+
+    function flipMagnet() {
+      playSound('click');
+      magnetDraggable.northLeft = !magnetDraggable.northLeft;
+    }
+
+    function resetSimulation() {
+      playSound('click');
+      repositionObjects();
+      ironFilings = [];
+    }
+
+    function sprinkleIron() {
+      playSound('snap');
+      ironFilings = [];
+      const count = 350;
+      for (let i = 0; i < count; i++) {
+        ironFilings.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          angle: 0
+        });
+      }
+    }
+
+    function clearIron() {
+      playSound('click');
+      ironFilings = [];
+    }
+
+    /* Input Handling (Touch & Mouse) */
+    function setupInputListeners() {
+      const getPos = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+          x: clientX - rect.left,
+          y: clientY - rect.top
+        };
+      };
+
+      const handleStart = (e) => {
+        const pos = getPos(e);
+
+        if (simMode === 'kutub' || simMode === 'garis') {
+          if (pos.x >= magnetDraggable.x && pos.x <= magnetDraggable.x + magnetDraggable.w &&
+              pos.y >= magnetDraggable.y && pos.y <= magnetDraggable.y + magnetDraggable.h) {
+            isDragging = true;
+            dragTarget = magnetDraggable;
+            dragOffsetX = pos.x - magnetDraggable.x;
+            dragOffsetY = pos.y - magnetDraggable.y;
+          }
+        } else if (simMode === 'benda') {
+          for (let item of testItems) {
+            if (pos.x >= item.x && pos.x <= item.x + item.w &&
+                pos.y >= item.y && pos.y <= item.y + item.h) {
+              isDragging = true;
+              dragTarget = item;
+              dragOffsetX = pos.x - item.x;
+              dragOffsetY = pos.y - item.y;
+              break;
+            }
+          }
+        }
+      };
+
+      const handleMove = (e) => {
+        if (!isDragging || !dragTarget) return;
+        const pos = getPos(e);
+        dragTarget.x = pos.x - dragOffsetX;
+        dragTarget.y = pos.y - dragOffsetY;
+      };
+
+      const handleEnd = () => {
+        isDragging = false;
+        dragTarget = null;
+      };
+
+      canvas.addEventListener('mousedown', handleStart);
+      canvas.addEventListener('mousemove', handleMove);
+      window.addEventListener('mouseup', handleEnd);
+
+      canvas.addEventListener('touchstart', handleStart, { passive: true });
+      canvas.addEventListener('touchmove', handleMove, { passive: true });
+      window.addEventListener('touchend', handleEnd);
+    }
+
+    /* Animation & Render Loop */
+    function animLoop() {
+      updatePhysics();
+      renderCanvas();
+      requestAnimationFrame(animLoop);
+    }
+
+    function updatePhysics() {
+      if (!canvas) return;
+
+      // MODE 1: KUTUB MAGNET INTERACTION
+      if (simMode === 'kutub') {
+        const m1RightPoleIsNorth = !magnetFixed.northLeft; // Fixed magnet right pole
+        const m2LeftPoleIsNorth = magnetDraggable.northLeft; // Draggable magnet left pole
+
+        // Measure distance between closest poles
+        const m1RightX = magnetFixed.x + magnetFixed.w;
+        const m1Y = magnetFixed.y + magnetFixed.h / 2;
+
+        const m2LeftX = magnetDraggable.x;
+        const m2Y = magnetDraggable.y + magnetDraggable.h / 2;
+
+        const dx = m2LeftX - m1RightX;
+        const dy = m2Y - m1Y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < 120) {
+          const isAttracting = (m1RightPoleIsNorth !== m2LeftPoleIsNorth);
+
+          if (isAttracting) {
+            // Tarik-menarik (Attract)
+            if (dist > 5) {
+              magnetDraggable.x -= dx * 0.1;
+              magnetDraggable.y -= dy * 0.1;
+            } else {
+              magnetDraggable.x = m1RightX;
+              magnetDraggable.y = magnetFixed.y;
+              if (Math.abs(dx) > 2) playSound('snap');
+            }
+          } else {
+            // Tolak-menolak (Repel)
+            if (dist < 110) {
+              const force = (110 - dist) * 0.15;
+              magnetDraggable.x += (dx === 0 ? 1 : dx / dist) * force;
+              magnetDraggable.y += (dy === 0 ? 0 : dy / dist) * force;
+              playSound('repel');
+            }
+          }
+        }
+      }
+
+      // MODE 2: BENDA MAGNETIS INTERACTION
+      else if (simMode === 'benda') {
+        const magCenterX = magnetFixed.x + magnetFixed.w / 2;
+        const magCenterY = magnetFixed.y + magnetFixed.h / 2;
+
+        testItems.forEach(item => {
+          if (item.magnetic) {
+            const itemCX = item.x + item.w / 2;
+            const itemCY = item.y + item.h / 2;
+
+            const dx = magCenterX - itemCX;
+            const dy = magCenterY - itemCY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < 130 && !isDragging) {
+              if (dist > 35) {
+                item.x += dx * 0.08;
+                item.y += dy * 0.08;
+              } else {
+                if (dist > 30) playSound('snap');
+              }
+            }
+          }
+        });
+      }
+
+      // MODE 3: GARIS GAYA (IRON FILINGS ALIGNMENT)
+      else if (simMode === 'garis' && ironFilings.length > 0) {
+        const pole1X = magnetFixed.x + 20; // North pole center
+        const pole1Y = magnetFixed.y + magnetFixed.h / 2;
+        const pole2X = magnetFixed.x + magnetFixed.w - 20; // South pole center
+        const pole2Y = magnetFixed.y + magnetFixed.h / 2;
+
+        ironFilings.forEach(f => {
+          const d1x = f.x - pole1X;
+          const d1y = f.y - pole1Y;
+          const dist1 = Math.sqrt(d1x * d1x + d1y * d1y) || 1;
+
+          const d2x = f.x - pole2X;
+          const d2y = f.y - pole2Y;
+          const dist2 = Math.sqrt(d2x * d2x + d2y * d2y) || 1;
+
+          // Dipole field vector calculation
+          const Bx = (d1x / Math.pow(dist1, 2)) - (d2x / Math.pow(dist2, 2));
+          const By = (d1y / Math.pow(dist1, 2)) - (d2y / Math.pow(dist2, 2));
+
+          f.angle = Math.atan2(By, Bx);
+        });
+      }
+    }
+
+    function renderCanvas() {
+      if (!ctx) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Grid background effect
+      drawGrid();
+
+      // Render Mode Specific Visuals
+      if (simMode === 'garis') {
+        drawIronFilings();
+        drawMagnet(magnetFixed);
+      } else if (simMode === 'kutub') {
+        drawMagneticFieldLines();
+        drawMagnet(magnetFixed);
+        drawMagnet(magnetDraggable);
+      } else if (simMode === 'benda') {
+        drawMagnet(magnetFixed);
+        drawTestItems();
+      }
+    }
+
+    function drawGrid() {
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 1;
+      const step = 30;
+      for (let x = 0; x < canvas.width; x += step) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+      }
+      for (let y = 0; y < canvas.height; y += step) {
+        ctx.beginPath();
+        ctx.moveTo(0, y); ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+      }
+    }
+
+    function drawMagnet(m) {
+      ctx.save();
+      ctx.shadowColor = 'rgba(0,0,0,0.4)';
+      ctx.shadowBlur = 10;
+      ctx.shadowOffsetY = 4;
+
+      const halfW = m.w / 2;
+
+      // North Pole (Red)
+      ctx.fillStyle = '#dc2626';
+      ctx.beginPath();
+      ctx.roundRect(
+        m.northLeft ? m.x : m.x + halfW,
+        m.y, halfW, m.h,
+        m.northLeft ? [8, 0, 0, 8] : [0, 8, 8, 0]
+      );
+      ctx.fill();
+
+      // South Pole (Blue)
+      ctx.fillStyle = '#2563eb';
+      ctx.beginPath();
+      ctx.roundRect(
+        m.northLeft ? m.x + halfW : m.x,
+        m.y, halfW, m.h,
+        m.northLeft ? [0, 8, 8, 0] : [8, 0, 0, 8]
+      );
+      ctx.fill();
+
+      // Text Labels
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 16px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      const nX = m.northLeft ? m.x + halfW / 2 : m.x + halfW + halfW / 2;
+      const sX = m.northLeft ? m.x + halfW + halfW / 2 : m.x + halfW / 2;
+
+      ctx.fillText('U', nX, m.y + m.h / 2);
+      ctx.fillText('S', sX, m.y + m.h / 2);
+
+      ctx.restore();
+    }
+
+    function drawMagneticFieldLines() {
+      // Decorative animated magnetic field arcs between magnets
+      const m1P2X = magnetFixed.x + magnetFixed.w;
+      const m1Y = magnetFixed.y + magnetFixed.h / 2;
+      const m2P1X = magnetDraggable.x;
+      const m2Y = magnetDraggable.y + magnetDraggable.h / 2;
+
+      const dx = m2P1X - m1P2X;
+      const dy = m2Y - m1Y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist < 220) {
+        ctx.save();
+        const isAttracting = (!magnetFixed.northLeft !== magnetDraggable.northLeft);
+
+        ctx.strokeStyle = isAttracting ? 'rgba(52, 211, 153, 0.5)' : 'rgba(248, 113, 113, 0.5)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+
+        const midX = (m1P2X + m2P1X) / 2;
+        const midY = (m1Y + m2Y) / 2;
+
+        for (let i = -3; i <= 3; i++) {
+          ctx.beginPath();
+          ctx.moveTo(m1P2X, m1Y);
+          const curveOffset = isAttracting ? i * 20 : (i === 0 ? 1 : i) * 40;
+          ctx.quadraticCurveTo(midX, midY + curveOffset, m2P1X, m2Y);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+    }
+
+    function drawTestItems() {
+      testItems.forEach(item => {
+        ctx.save();
+        ctx.fillStyle = item.color;
+        ctx.shadowColor = 'rgba(0,0,0,0.3)';
+        ctx.shadowBlur = 6;
+
+        ctx.beginPath();
+        ctx.roundRect(item.x, item.y, item.w, item.h, 6);
+        ctx.fill();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(item.name, item.x + item.w / 2, item.y + item.h / 2);
+
+        // Magnetic Indicator Badge
+        ctx.fillStyle = item.magnetic ? '#22c55e' : '#ef4444';
+        ctx.beginPath();
+        ctx.arc(item.x + item.w - 4, item.y + 4, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+      });
+    }
+
+    function drawIronFilings() {
+      ctx.save();
+      ctx.strokeStyle = 'rgba(203, 213, 225, 0.7)';
+      ctx.lineWidth = 1.5;
+
+      ironFilings.forEach(f => {
+        ctx.beginPath();
+        const len = 6;
+        const x2 = f.x + Math.cos(f.angle) * len;
+        const y2 = f.y + Math.sin(f.angle) * len;
+        ctx.moveTo(f.x, f.y);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+      });
+      ctx.restore();
+    }
+
+    /* ==========================================================================
+       5. LKPD QUIZ LOGIC
+       ========================================================================== */
+    function checkQuiz() {
+      let score = 0;
+      const q1 = document.querySelector('input[name="q1"]:checked');
+      const q2 = document.querySelector('input[name="q2"]:checked');
+      const q3 = document.querySelector('input[name="q3"]:checked');
+
+      if (q1 && q1.value === 'B') score += 35;
+      if (q2 && q2.value === 'A') score += 35;
+      if (q3 && q3.value === 'A') score += 30;
+
+      const scoreBadge = document.getElementById('score-badge');
+      scoreBadge.innerText = `Skor: ${score} / 100`;
+
+      if (score >= 70) {
+        playSound('success');
+        scoreBadge.className = "bg-emerald-500 text-white px-3 py-1 rounded-lg font-extrabold text-sm sm:text-base shadow animate-bounce";
+      } else {
+        playSound('wrong');
+        scoreBadge.className = "bg-red-500 text-white px-3 py-1 rounded-lg font-extrabold text-sm sm:text-base shadow";
+      }
+    }
+
+    function resetQuiz() {
+      playSound('click');
+      const inputs = document.querySelectorAll('input[type="radio"]');
+      inputs.forEach(i => i.checked = false);
+      const scoreBadge = document.getElementById('score-badge');
+      scoreBadge.innerText = "Skor: 0 / 100";
+      scoreBadge.className = "bg-yellow-400 text-slate-900 px-3 py-1 rounded-lg font-extrabold text-sm sm:text-base shadow";
+    }
+  </script>
+</body>
+</html>
